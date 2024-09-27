@@ -57,7 +57,7 @@ private:
     void VisitUnary(UnaryExpr e, const std::string &op);
 
     template<typename T>
-    void VisitNary(const T &e, const std::string &op);
+    void VisitNary(T &e, const std::string &op, bool can_squash = false);
 };
 
 /**

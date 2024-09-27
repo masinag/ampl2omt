@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
         w << "\n";
     }
 
-    w << "(check-sat)\n(get-objectives)";
+    w << "(check-sat)\n(get-objectives)\n(exit)\n";
 
     std::string output_filename = argv[2];
     std::ofstream output_file(output_filename);

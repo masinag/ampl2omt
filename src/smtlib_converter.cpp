@@ -72,11 +72,11 @@ void SmtLibConverter::VisitPLTerm(mp::PLTerm e) {
 
 void SmtLibConverter::VisitVarArg(VarArgExpr e) {
     std::string op = expr::str(e.kind());
-    VisitNary(e, op);
+    VisitNary(e, op, false);
 }
 
 void SmtLibConverter::VisitSum(SumExpr e) {
-    VisitNary(e, "+");
+    VisitNary(e, "+", true);
 }
 
 void SmtLibConverter::VisitRelational(mp::RelationalExpr e) {
@@ -95,7 +95,11 @@ void SmtLibConverter::VisitUnary(mp::UnaryExpr e, const std::string &op) {
 }
 
 template<typename T>
-void SmtLibConverter::VisitNary(const T &e, const std::string &op) {
+void SmtLibConverter::VisitNary(T &e, const std::string &op, bool can_squash) {
+    if (e.num_args() == 0 && can_squash) {
+        Visit(e.arg(0));
+        return;
+    }
     out_ << "(" << op;
     for (const auto &arg: e) {
         out_ << " ";
@@ -175,22 +179,35 @@ void variable_decl_to_smtlib(const mp::BasicProblem<>::Variable &v, fmt::MemoryW
 template<typename T>
 void algebraic_expression_to_smtlib(T &expr, mp::Problem &p, SmtLibConverter &converter) {
     fmt::MemoryWriter &w = converter.writer();
-    w << "(+";
 
-    bool has_linear = expr.linear_expr().num_terms() > 0;
-    bool has_nonlinear = expr.nonlinear_expr();
-    if (has_linear) {
-        for (const auto &lin_term: expr.linear_expr()) {
-            if (lin_term.coef() != 0) {
-                w << " (* " << float_to_smtlib(lin_term.coef()) << " " << var_name(p.var(lin_term.var_index())) << ")";
-            }
+    std::vector<size_t> linear_terms_idx;
+    for (size_t i = 0; i < expr.linear_expr().num_terms(); i++) {
+        if (expr.linear_expr().coef(i) != 0) {
+            linear_terms_idx.push_back(i);
         }
     }
+
+    bool has_linear = !linear_terms_idx.empty();
+    bool has_nonlinear = expr.nonlinear_expr();
+
+    bool is_sum = (linear_terms_idx.size() > 1) ||
+                  (has_linear && has_nonlinear);
+    if (is_sum) {
+        w << "(+";
+    }
+
+    for (size_t i: linear_terms_idx) {
+        w << " (* " << float_to_smtlib(expr.linear_expr().coef(i)) << " "
+          << var_name(p.var(expr.linear_expr().var_index(i))) << ")";
+    }
+
     if (has_nonlinear) {
-        if (has_linear) {
+        if (is_sum) {
             w << " ";
         }
         converter.Visit(expr.nonlinear_expr());
     }
-    w << ")";
+    if (is_sum) {
+        w << ")";
+    }
 }
