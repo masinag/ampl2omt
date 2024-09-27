@@ -136,20 +136,22 @@ void constraint_to_smtlib(const mp::BasicProblem<>::AlgebraicCon &con, mp::Probl
         if (con.lb() == con.ub()) {
             w << "(assert (= ";
             algebraic_expression_to_smtlib(con, p, converter);
-            w << " " << con.lb() << "))";
+            w << " " << float_to_smtlib(con.lb()) << "))";
         } else {
             w << "(assert (let ((.def_0 ";
             algebraic_expression_to_smtlib(con, p, converter);
-            w << ")) (and (<= " << con.lb() << " .def_0) (<= .def_0 " << con.ub() << "))))";
+            w << ")) (and << " <<
+              "(<= " << float_to_smtlib(con.lb()) << " .def_0)" <<
+              "(<= .def_0 " << float_to_smtlib(con.ub()) << "))))";
         }
     } else if (has_lower_bound) {
-        w << "(assert (<= " << con.lb() << " ";
+        w << "(assert (<= " << float_to_smtlib(con.lb()) << " ";
         algebraic_expression_to_smtlib(con, p, converter);
         w << "))";
     } else if (has_upper_bound) {
         w << "(assert (<= ";
         algebraic_expression_to_smtlib(con, p, converter);
-        w << " " << con.ub() << "))";
+        w << " " << float_to_smtlib(con.ub()) << "))";
     }
 }
 
