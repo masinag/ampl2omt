@@ -113,7 +113,7 @@ std::string float_to_smtlib(double d) {
     if (d == static_cast<int>(d)) {
         template_str = "{:.1f}";
     } else {
-        template_str = "{}";
+        template_str = "{:f}";
     }
 
     if (d < 0) {
@@ -140,7 +140,7 @@ void constraint_to_smtlib(const mp::BasicProblem<>::AlgebraicCon &con, mp::Probl
         } else {
             w << "(assert (let ((.def_0 ";
             algebraic_expression_to_smtlib(con, p, converter);
-            w << ")) (and << " <<
+            w << ")) (and " <<
               "(<= " << float_to_smtlib(con.lb()) << " .def_0)" <<
               "(<= .def_0 " << float_to_smtlib(con.ub()) << "))))";
         }
