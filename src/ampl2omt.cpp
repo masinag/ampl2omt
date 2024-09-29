@@ -1,4 +1,4 @@
-#include "smtlib_converter.hpp"
+#include "ampl2omt/smtlib_converter.hpp"
 #include "mp/nl-reader.h"
 #include <string>
 #include <filesystem>
@@ -24,29 +24,12 @@ int main(int argc, char **argv) {
 
 
     mp::Problem p;
+
     ReadNLFile(input_filename, p);
 
     fmt::MemoryWriter w;
-    SmtLibConverter converter(w, p);
-
-    for (const auto &v: p.vars()) {
-        variable_decl_to_smtlib(v, w, p);
-        w << "\n";
-    }
-    w << "\n";
-
-    for (const auto &c: p.algebraic_cons()) {
-        constraint_to_smtlib(c, p, converter);
-        w << "\n";
-    }
-    w << "\n";
-
-    for (const auto &obj: p.objs()) {
-        objective_to_smtlib(obj, p, converter);
-        w << "\n";
-    }
-
-    w << "(check-sat)\n(get-objectives)\n(exit)\n";
+    SmtLibConverter converter(w);
+    converter.convert(p);
 
     std::string output_filename = argv[2];
     std::ofstream output_file(output_filename);
