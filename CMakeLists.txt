@@ -6,24 +6,27 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+  set(CMAKE_BUILD_TYPE Release)
 endif ()
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+# MP options
+set(BUILD_EXAMPLES OFF)
+set(BUILD_TESTS OFF)
+#set(SKIP_BUILD_MP ON)
 
 include(FetchContent)
 
 FetchContent_Declare(
         ampl_mp
         GIT_REPOSITORY https://github.com/ampl/mp.git
-        GIT_TAG develop
+        GIT_TAG v4.0.0
 )
 
 FetchContent_MakeAvailable(ampl_mp)
-# MP options
-set(BUILD_EXAMPLES OFF)
-set(SKIP_BUILD_MP ON)
+
 
 set(LIBRARY_SOURCES
         src/smtlib_converter.cpp
